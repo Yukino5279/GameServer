@@ -1,4 +1,4 @@
-package com.example.gameserver;
+package com.sbeam.gameserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
