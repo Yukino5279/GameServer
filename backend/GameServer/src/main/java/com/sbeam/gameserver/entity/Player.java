@@ -9,13 +9,12 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
-public class players {
 
-    @Getter
-    @Setter
-    @Entity
-    @Table(name = "players")
-    public static class Player {
+@Getter
+@Setter
+@Entity
+@Table(name = "players")
+public class Player {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "player_id", nullable = false)
@@ -52,5 +51,4 @@ public class players {
         private Instant updatedAt;
 
 
-    }
 }
