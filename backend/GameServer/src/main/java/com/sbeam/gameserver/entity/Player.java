@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
@@ -14,6 +17,7 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "players")
+@EntityListeners(AuditingEntityListener.class)
 public class Player {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,17 +42,18 @@ public class Player {
         @Column(name = "status")
         private Byte status;
 
-        @ColumnDefault("CURRENT_TIMESTAMP")
+        @CreatedDate // 自动填充创建时间
         @Column(name = "created_at")
         private Instant createdAt;
 
-        @ColumnDefault("CURRENT_TIMESTAMP")
+        @LastModifiedDate // 自动填充更新时间
+        @Column(name = "updated_at")
+        private Instant updatedAt;
+
         @Column(name = "birthday")
         private Instant birthday;
 
-        @ColumnDefault("CURRENT_TIMESTAMP")
-        @Column(name = "updated_at")
-        private Instant updatedAt;
+
 
 
 }
