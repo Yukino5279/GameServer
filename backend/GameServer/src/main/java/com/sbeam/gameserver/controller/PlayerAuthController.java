@@ -1,8 +1,10 @@
 package com.sbeam.gameserver.controller;
 
+import com.sbeam.gameserver.pojo.DTO.request.EmailVerificationCodeRequest;
 import com.sbeam.gameserver.pojo.DTO.request.PlayerLoginRequest;
 import com.sbeam.gameserver.pojo.DTO.request.PlayerRegisterRequest;
 import com.sbeam.gameserver.pojo.DTO.response.AuthResponseDTO;
+import com.sbeam.gameserver.pojo.DTO.response.MessageResponseDTO;
 import com.sbeam.gameserver.pojo.DTO.response.PlayerResponseDTO;
 import com.sbeam.gameserver.service.PlayerAuthService;
 import jakarta.validation.Valid;
@@ -25,6 +27,12 @@ public class PlayerAuthController {
     public AuthResponseDTO register(@Valid @RequestBody PlayerRegisterRequest request) {
         PlayerResponseDTO player = playerAuthService.register(request);
         return new AuthResponseDTO("注册成功", player);
+    }
+
+    @PostMapping("/register/verification-code")
+    public MessageResponseDTO sendRegisterVerificationCode(@Valid @RequestBody EmailVerificationCodeRequest request) {
+        playerAuthService.sendRegisterVerificationCode(request.getEmail());
+        return new MessageResponseDTO("验证码发送成功");
     }
 
     @PostMapping("/login")

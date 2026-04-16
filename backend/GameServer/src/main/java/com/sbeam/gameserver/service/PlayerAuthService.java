@@ -9,16 +9,27 @@ import com.sbeam.gameserver.repository.PlayerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sbeam.gameserver.service.EmailVerificationService;
 
 @Service
 public class PlayerAuthService {
     //声明构造函数
     private final PlayerRepository playerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
-    public PlayerAuthService(PlayerRepository playerRepository, PasswordEncoder passwordEncoder) {
+    public PlayerAuthService(PlayerRepository playerRepository,
+                             PasswordEncoder passwordEncoder,
+                             EmailVerificationService emailVerificationService) {
         this.playerRepository = playerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerificationService=emailVerificationService;
+    }
+    public void sendRegisterVerificationCode(String email) {
+        if (playerRepository.existsByEmail(email)) {
+            throw new BusinessException("邮箱已被注册");
+        }
+        emailVerificationService.sendCode(email);
     }
 
     // 开启事务，确保数据库操作的原子性（要么全成功，要么全回滚）
@@ -30,6 +41,9 @@ public class PlayerAuthService {
         if (playerRepository.existsByNickname(request.getNickname())) {
             throw new BusinessException("昵称已被占用");
         }
+
+        emailVerificationService.verifyCodeOrThrow(request.getEmail(), request.getVerificationCode());
+
         // 创建新玩家实体并设置属性
         Player player = new Player();
         player.setEmail(request.getEmail());

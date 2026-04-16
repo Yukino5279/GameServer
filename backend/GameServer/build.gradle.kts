@@ -52,12 +52,14 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("com.h2database:h2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
 }
 dependencyManagement {
     imports {
         mavenBom("org.springframework.grpc:spring-grpc-dependencies:${property("springGrpcVersion")}")
-
-
     }
 }
 
