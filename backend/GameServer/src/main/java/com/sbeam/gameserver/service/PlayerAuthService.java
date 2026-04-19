@@ -5,11 +5,13 @@ import com.sbeam.gameserver.exception.BusinessException;
 import com.sbeam.gameserver.pojo.DTO.request.PlayerLoginRequest;
 import com.sbeam.gameserver.pojo.DTO.request.PlayerRegisterRequest;
 import com.sbeam.gameserver.pojo.DTO.response.PlayerResponseDTO;
+import com.sbeam.gameserver.pojo.DTO.request.PlayerPasswordUpdateRequest;
+import com.sbeam.gameserver.pojo.DTO.request.PlayerLogoutRequest;
+import com.sbeam.gameserver.pojo.DTO.request.PlayerNicknameUpdateRequest;
 import com.sbeam.gameserver.repository.PlayerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.sbeam.gameserver.service.EmailVerificationService;
 
 @Service
 public class PlayerAuthService {
@@ -32,14 +34,19 @@ public class PlayerAuthService {
         emailVerificationService.sendCode(email);
     }
 
+    //修改密码的校验邮箱
+    public void sendPasswordUpdateVerificationCode(String email) {
+        if (!playerRepository.existsByEmail(email)) {
+            throw new BusinessException("账号不存在");
+        }
+        emailVerificationService.sendCode(email);
+    }
+
     // 开启事务，确保数据库操作的原子性（要么全成功，要么全回滚）
     @Transactional
     public PlayerResponseDTO register(PlayerRegisterRequest request) {
         if (playerRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("邮箱已被注册");
-        }
-        if (playerRepository.existsByNickname(request.getNickname())) {
-            throw new BusinessException("昵称已被占用");
         }
 
         emailVerificationService.verifyCodeOrThrow(request.getEmail(), request.getVerificationCode());
@@ -69,5 +76,39 @@ public class PlayerAuthService {
         }
 
         return new PlayerResponseDTO(player.getId(), player.getEmail(), player.getNickname());
+    }
+    @Transactional(readOnly = true)
+    public void logout(PlayerLogoutRequest request) {
+        if (!playerRepository.existsByEmail(request.getEmail())) {
+            throw new BusinessException("账号不存在");
+        }
+    }
+
+    @Transactional
+    public PlayerResponseDTO updateNickname(PlayerNicknameUpdateRequest request) {
+        Player player = playerRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("账号不存在"));
+
+        if (!passwordEncoder.matches(request.getPassword(), player.getPasswordHash())) {
+            throw new BusinessException("账号或密码错误");
+        }
+
+        player.setNickname(request.getNewNickname());
+        Player updatedPlayer = playerRepository.save(player);
+        return new PlayerResponseDTO(updatedPlayer.getId(), updatedPlayer.getEmail(), updatedPlayer.getNickname());
+    }
+
+    @Transactional
+    public void updatePassword(PlayerPasswordUpdateRequest request) {
+        Player player = playerRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("账号不存在"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), player.getPasswordHash())) {
+            throw new BusinessException("原密码错误");
+        }
+
+        emailVerificationService.verifyCodeOrThrow(request.getEmail(), request.getVerificationCode());
+        player.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        playerRepository.save(player);
     }
 }
