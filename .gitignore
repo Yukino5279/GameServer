@@ -1,7 +1,10 @@
 ### Java (Gradle/Maven) ###
 .gradle/
 build/
-*.class
+*.class    
+out/
+bin/     
+**/application.properties
 
 ### Go ###
 bin/
