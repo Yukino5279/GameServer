@@ -27,6 +27,8 @@ public class PlayerAuthService {
         this.passwordEncoder = passwordEncoder;
         this.emailVerificationService=emailVerificationService;
     }
+
+    //注册账号的校验邮箱
     public void sendRegisterVerificationCode(String email) {
         if (playerRepository.existsByEmail(email)) {
             throw new BusinessException("邮箱已被注册");
@@ -77,13 +79,16 @@ public class PlayerAuthService {
 
         return new PlayerResponseDTO(player.getId(), player.getEmail(), player.getNickname());
     }
-    @Transactional(readOnly = true)
+
+    //注销账户
+    @Transactional()
     public void logout(PlayerLogoutRequest request) {
-        if (!playerRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("账号不存在");
-        }
+        Player player=playerRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("账号不存在"));
+        playerRepository.delete(player);
     }
 
+    //更新昵称
     @Transactional
     public PlayerResponseDTO updateNickname(PlayerNicknameUpdateRequest request) {
         Player player = playerRepository.findByEmail(request.getEmail())
@@ -98,6 +103,7 @@ public class PlayerAuthService {
         return new PlayerResponseDTO(updatedPlayer.getId(), updatedPlayer.getEmail(), updatedPlayer.getNickname());
     }
 
+    //更新密码
     @Transactional
     public void updatePassword(PlayerPasswordUpdateRequest request) {
         Player player = playerRepository.findByEmail(request.getEmail())
