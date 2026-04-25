@@ -2,12 +2,8 @@ package com.sbeam.gameserver.service;
 
 import com.sbeam.gameserver.entity.Player;
 import com.sbeam.gameserver.exception.BusinessException;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerLoginRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerRegisterRequest;
+import com.sbeam.gameserver.pojo.DTO.request.*;
 import com.sbeam.gameserver.pojo.DTO.response.PlayerResponseDTO;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerPasswordUpdateRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerLogoutRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerNicknameUpdateRequest;
 import com.sbeam.gameserver.repository.PlayerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,8 +32,8 @@ public class PlayerAuthService {
         emailVerificationService.sendCode(email);
     }
 
-    //修改密码的校验邮箱
-    public void sendPasswordUpdateVerificationCode(String email) {
+    //创建完账号后的的校验邮箱
+    public void sendVerificationCode(String email) {
         if (!playerRepository.existsByEmail(email)) {
             throw new BusinessException("账号不存在");
         }
@@ -80,13 +76,27 @@ public class PlayerAuthService {
         return new PlayerResponseDTO(player.getId(), player.getEmail(), player.getNickname());
     }
 
-    //注销账户
+    //退出登录
     @Transactional()
     public void logout(PlayerLogoutRequest request) {
-        Player player=playerRepository.findByEmail(request.getEmail())
+        playerRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException("账号不存在"));
+        // 仅校验账号存在，客户端据此清除本地登录态。待引入jwt
+    }
+
+    //注销账号
+    @Transactional()
+    public void deleteAccount(PlayerDeleteAccountRequest request) {
+        Player player = playerRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("账号不存在"));
+        if (!passwordEncoder.matches(request.getPassword(), player.getPasswordHash())) {
+            throw new BusinessException("账号或密码错误");
+        }
+        emailVerificationService.verifyCodeOrThrow(request.getEmail(), request.getVerificationCode());
         playerRepository.delete(player);
     }
+
+
 
     //更新昵称
     @Transactional

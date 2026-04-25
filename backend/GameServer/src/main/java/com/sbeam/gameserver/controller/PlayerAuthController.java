@@ -1,15 +1,10 @@
 package com.sbeam.gameserver.controller;
 
-import com.sbeam.gameserver.pojo.DTO.request.EmailVerificationCodeRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerLoginRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerRegisterRequest;
+import com.sbeam.gameserver.pojo.DTO.request.*;
 import com.sbeam.gameserver.pojo.DTO.response.AuthResponseDTO;
 import com.sbeam.gameserver.pojo.DTO.response.MessageResponseDTO;
 import com.sbeam.gameserver.pojo.DTO.response.PlayerResponseDTO;
 import com.sbeam.gameserver.service.PlayerAuthService;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerPasswordUpdateRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerLogoutRequest;
-import com.sbeam.gameserver.pojo.DTO.request.PlayerNicknameUpdateRequest;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,7 +42,13 @@ public class PlayerAuthController {
     @PostMapping("/logout")
     public MessageResponseDTO logout(@Valid @RequestBody PlayerLogoutRequest request) {
         playerAuthService.logout(request);
-        return new MessageResponseDTO("注销成功");
+        return new MessageResponseDTO("退出登录成功，已清除该设备登录信息");
+    }
+
+    @PostMapping("/delete-account")
+    public MessageResponseDTO deleteAccount(@Valid @RequestBody PlayerDeleteAccountRequest request) {
+        playerAuthService.deleteAccount(request);
+        return new MessageResponseDTO("账号注销成功");
     }
 
     @PostMapping("/nickname")
@@ -56,9 +57,9 @@ public class PlayerAuthController {
         return new AuthResponseDTO("用户名修改成功", player);
     }
 
-    @PostMapping("/password/verification-code")
-    public MessageResponseDTO sendPasswordUpdateVerificationCode(@Valid @RequestBody EmailVerificationCodeRequest request) {
-        playerAuthService.sendPasswordUpdateVerificationCode(request.getEmail());
+    @PostMapping("/verification-code")
+    public MessageResponseDTO sendVerificationCode(@Valid @RequestBody EmailVerificationCodeRequest request) {
+        playerAuthService.sendVerificationCode(request.getEmail());
         return new MessageResponseDTO("验证码发送成功");
     }
 
