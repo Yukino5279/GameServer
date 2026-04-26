@@ -54,6 +54,4 @@ public class Player {
         private Instant birthday;
 
 
-
-
 }

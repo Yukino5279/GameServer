@@ -2,8 +2,7 @@ package com.sbeam.gameserver.pojo.DTO.response;
 
 import java.time.Instant;
 
-public record AuthResponseDTO(
-        String message,
+public record PlayerLoginResponseDTO(
         PlayerResponseDTO player,
         String accessToken,
         Instant accessTokenExpireAt,
